@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "StreamLabs.MultiProbe.Watchdog.Daemon": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "DockerfileRunArguments": "--network host --add-host alphablack:192.168.65.2"
+    }
+  }
+}
