@@ -1,4 +1,4 @@
-using StreamLabs.MultiProbe.Watchdog.Core;
+using StreamLabs.MultiProbe.Watchdog.Engine;
 
 namespace StreamLabs.MultiProbe.Watchdog.Daemon;
 

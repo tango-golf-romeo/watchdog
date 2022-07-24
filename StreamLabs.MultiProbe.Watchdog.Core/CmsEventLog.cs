@@ -6,7 +6,7 @@ using System.Net.Sockets;
 
 namespace StreamLabs.MultiProbe.Watchdog.Core;
 
-internal class CmsEventLog
+public class CmsEventLog
 {
 	public CmsEventLog ()
 	{
@@ -20,22 +20,22 @@ internal class CmsEventLog
 		{
 			//this.testConnectivity();
 
-			//cnn = new SqlConnection("Data Source = host.docker.internal,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = watchdog");
-			//cnn = new SqlConnection("Data Source = 192.168.65.2,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = watchdog");
-			cnn = new SqlConnection("Data Source = alphablack,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = watchdog");
+			//cnn = new SqlConnection("Data Source = host.docker.internal,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = 18BB1E14-8837-4FD6-AB9B-72240DC3C9F4");
+			//cnn = new SqlConnection("Data Source = 192.168.65.2,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = 18BB1E14-8837-4FD6-AB9B-72240DC3C9F4");
+			cnn = new SqlConnection("Data Source = alphablack,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = 18BB1E14-8837-4FD6-AB9B-72240DC3C9F4");
 			await cnn.OpenAsync(ct);
 
 			using (DbTransaction tran = await cnn.BeginTransactionAsync(IsolationLevel.Serializable,ct).ConfigureAwait(false))
 			{
 				try
 				{
-					using (SqlCommand cmd = new SqlCommand(@"INSERT INTO Events ([Level],Source,Message)
-VALUES(@Level,@Source,@Message)",cnn,tran as SqlTransaction))
+					using (SqlCommand cmd = new SqlCommand(@"INSERT INTO Bus.Evnts (Lvl,Src,Dsc)
+VALUES(@Lvl,@Src,@Dsc)",cnn,tran as SqlTransaction))
 					{
 						cmd.CommandType = CommandType.Text;
-						cmd.Parameters.Add("Level",SqlDbType.Int).Value = 0;
-						CmsEventLog.AddNullableParam(cmd,"Source","Test Source",32);
-						CmsEventLog.AddNullableParam(cmd,"Message","Test message goes here...",256);
+						cmd.Parameters.Add("Lvl",SqlDbType.Int).Value = 0;
+						CmsEventLog.AddNullableParam(cmd,"Src","Test Source",32);
+						CmsEventLog.AddNullableParam(cmd,"Dsc","Test message goes here...",256);
 
 						await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
 

@@ -16,5 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StreamLabs.MultiProbe.Watchdog.Core\StreamLabs.MultiProbe.Watchdog.Core.csproj" />
+    <ProjectReference Include="..\StreamLabs.MultiProbe.Watchdog.Engine\StreamLabs.MultiProbe.Watchdog.Engine.csproj" />
   </ItemGroup>
 </Project>

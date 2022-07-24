@@ -19,7 +19,7 @@ DECLARE @test int
 SELECT @test = SUSER_ID(N'watchdog')
 IF @test IS NULL
 BEGIN
-	CREATE LOGIN watchdog WITH PASSWORD = N'watchdog',
+	CREATE LOGIN watchdog WITH PASSWORD = N'18BB1E14-8837-4FD6-AB9B-72240DC3C9F4',
 	CHECK_EXPIRATION = OFF, CHECK_POLICY = OFF, DEFAULT_DATABASE = CircuitWatchdog
 END
 
@@ -32,7 +32,12 @@ GO
 
 USE CircuitWatchdog
 
-DECLARE @test int
+DECLARE @test int = SCHEMA_ID('Bus')
+
+IF @test IS NULL
+BEGIN
+	EXEC('CREATE SCHEMA Bus')
+END
 
 IF NOT EXISTS(SELECT 1 FROM sys.sysusers WHERE name = N'watchdog')
 BEGIN
@@ -56,245 +61,235 @@ END
 
 BEGIN TRANSACTION
 
-SELECT @test = OBJECT_ID('Circuits')
+SELECT @test = OBJECT_ID('Bus.Circuits')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE Circuits
+	CREATE TABLE Bus.Circuits
 	(
-		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Code				nvarchar(32)	NOT NULL,
-		[Name]			nvarchar(256)	NOT NULL
+		Id			int						NOT NULL PRIMARY KEY IDENTITY(1,1),
+		Ver			rowversion		NOT NULL,
+		Enbld		bit						NOT NULL DEFAULT(1),
+		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		Code		nvarchar(32)	NOT NULL
 	)
 	
-	CREATE UNIQUE NONCLUSTERED INDEX IX1_Circuits ON Circuits (Code ASC)
-	CREATE UNIQUE NONCLUSTERED INDEX IX2_Circuits ON Circuits ([Name] ASC)
+	CREATE UNIQUE NONCLUSTERED INDEX IX1_Bus_Circuits ON Bus.Circuits (Code ASC)
 END
 
-SELECT @test = OBJECT_ID('CircuitDescs')
+SELECT @test = OBJECT_ID('Bus.CircuitDescs')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE CircuitDescs
+	CREATE TABLE Bus.CircuitDescs
 	(
-		Id					int						NOT NULL PRIMARY KEY,
-		Ver					rowversion		NOT NULL,
-		[Desc]			nvarchar(max)	NULL
+		Id		int						NOT NULL PRIMARY KEY,
+		Ver		rowversion		NOT NULL,
+		Dsc		nvarchar(max)	NULL
 	)
 
-	ALTER TABLE CircuitDescs ADD CONSTRAINT FK1_CircuitDescs FOREIGN KEY (Id)
-	REFERENCES Circuits (Id)
+	ALTER TABLE Bus.CircuitDescs ADD CONSTRAINT FK1_Bus_CircuitDescs FOREIGN KEY (Id)
+	REFERENCES Bus.Circuits (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 END
 
-SELECT @test = OBJECT_ID('Pins')
+SELECT @test = OBJECT_ID('Bus.Pins')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE Pins
+	CREATE TABLE Bus.Pins
 	(
-		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Code				nvarchar(32)	NOT NULL,
-		[Name]			nvarchar(256)	NOT NULL, --may not be required
-		[Type]			int						NOT NULL, -- input, output
-		Probed			bit						NOT NULL DEFAULT(1) -- if it should be probed/monitored
+		Id			int						NOT NULL PRIMARY KEY IDENTITY(1,1),
+		Ver			rowversion		NOT NULL,
+		Enbld		bit						NOT NULL DEFAULT(1),
+		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		Code		nvarchar(32)	NOT NULL,
+		Typ			int						NOT NULL, -- input, output
+		Probed	bit						NOT NULL DEFAULT(1) -- if it should be probed/monitored
 		--extra parameters such as weight, priority, criticality, etc. may apply
 	)
 	
-	CREATE UNIQUE NONCLUSTERED INDEX IX1_Pins ON Pins (Code ASC)
-	CREATE UNIQUE NONCLUSTERED INDEX IX2_Pins ON Pins ([Name] ASC)
+	CREATE UNIQUE NONCLUSTERED INDEX IX1_Bus_Pins ON Bus.Pins (Code ASC)
 END
 
-SELECT @test = OBJECT_ID('CircuitPins')
+SELECT @test = OBJECT_ID('Bus.CircuitPins')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE CircuitPins
+	CREATE TABLE Bus.CircuitPins
 	(
 		CircuitId		int						NOT NULL,
 		PinId				int						NOT NULL,
 		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE())
+		Enbld				bit						NOT NULL DEFAULT(1),
+		TMake				datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod				datetime2			NOT NULL DEFAULT(GETUTCDATE())
 	)
 
-	ALTER TABLE CircuitPins ADD CONSTRAINT PK_CircuitPins PRIMARY KEY CLUSTERED(CircuitId,PinId)
+	ALTER TABLE Bus.CircuitPins ADD CONSTRAINT PK_Bus_CircuitPins PRIMARY KEY CLUSTERED(CircuitId,PinId)
 END
 
-SELECT @test = OBJECT_ID('Switches')
+SELECT @test = OBJECT_ID('Bus.Switches')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE Switches --the concept of switches should TBD, so far it is just indication of intentions
+	CREATE TABLE Bus.Switches --the concept of switches is TBD, so far it is just indication of intentions
 	(
-		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Code				nvarchar(32)	NOT NULL,
-		[Name]			nvarchar(256)	NOT NULL
+		Id			int						NOT NULL PRIMARY KEY IDENTITY(1,1),
+		Ver			rowversion		NOT NULL,
+		Enbld		bit						NOT NULL DEFAULT(1),
+		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		Tmod		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		Code		nvarchar(32)	NOT NULL
 	)
 	
-	CREATE UNIQUE NONCLUSTERED INDEX IX1_Switches ON Switches (Code ASC)
-	CREATE UNIQUE NONCLUSTERED INDEX IX2_Switches ON Switches ([Name] ASC)
+	CREATE UNIQUE NONCLUSTERED INDEX IX1_Bus_Switches ON Bus.Switches (Code ASC)
 END
 
-SELECT @test = OBJECT_ID('Buses')
+SELECT @test = OBJECT_ID('Bus.Buses')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE Buses -- may operate under the hood
+	CREATE TABLE Bus.Buses -- may operate under the hood
 	(
-		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Code				nvarchar(32)	NOT NULL, -- may not be required
-		[Name]			nvarchar(256)	NOT NULL -- may not be required
+		Id			int						NOT NULL PRIMARY KEY IDENTITY(1,1),
+		Ver			rowversion		NOT NULL,
+		Enbld		bit						NOT NULL DEFAULT(1),
+		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMode		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		Code		nvarchar(32)	NOT NULL -- may not be required
 	)
 	
-	CREATE UNIQUE NONCLUSTERED INDEX IX1_Buses ON Buses (Code ASC)
-	CREATE UNIQUE NONCLUSTERED INDEX IX2_Buses ON Buses ([Name] ASC)
+	CREATE UNIQUE NONCLUSTERED INDEX IX1_Bus_Buses ON Bus.Buses (Code ASC)
 END
 
-SELECT @test = OBJECT_ID('BusDescs')
+SELECT @test = OBJECT_ID('Bus.BusDescs')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE BusDescs
+	CREATE TABLE Bus.BusDescs
 	(
-		Id					int						NOT NULL PRIMARY KEY,
-		Ver					rowversion		NOT NULL,
-		[Desc]			nvarchar(max)	NULL
+		Id		int						NOT NULL PRIMARY KEY,
+		Ver		rowversion		NOT NULL,
+		Dsc		nvarchar(max)	NULL
 	)
 
-	ALTER TABLE BusDescs ADD CONSTRAINT FK1_BusDescs FOREIGN KEY (Id)
-	REFERENCES Buses (Id)
+	ALTER TABLE Bus.BusDescs ADD CONSTRAINT FK1_Bus_BusDescs FOREIGN KEY (Id)
+	REFERENCES Bus.Buses (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 END
 
-SELECT @test = OBJECT_ID('Wires')
+SELECT @test = OBJECT_ID('Bus.Wires')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE Wires --operates under the hood
+	CREATE TABLE Bus.Wires --operates under the hood
 	(
-		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE())
+		Id			int						NOT NULL PRIMARY KEY IDENTITY(1,1),
+		Ver			rowversion		NOT NULL,
+		Enbld		bit						NOT NULL DEFAULT(1),
+		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod		datetime2			NOT NULL DEFAULT(GETUTCDATE())
 	)
 END
 
-SELECT @test = OBJECT_ID('BusWires')
+SELECT @test = OBJECT_ID('Bus.BusWires')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE BusWires --operates under the hood
+	CREATE TABLE Bus.BusWires --operates under the hood
 	(
-		BusId				int						NOT NULL,
-		WireId			int						NOT NULL,
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE())
+		BusId			int						NOT NULL,
+		WireId		int						NOT NULL,
+		Ver				rowversion		NOT NULL,
+		Enbld			bit						NOT NULL DEFAULT(1),
+		TMake			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod			datetime2			NOT NULL DEFAULT(GETUTCDATE())
 	)
 
-	ALTER TABLE BusWires ADD CONSTRAINT PK_BusWires PRIMARY KEY CLUSTERED(BusId,WireId)
+	ALTER TABLE Bus.BusWires ADD CONSTRAINT PK_Bus_BusWires PRIMARY KEY CLUSTERED(BusId,WireId)
 
-	ALTER TABLE BusWires ADD CONSTRAINT FK1_BusWires FOREIGN KEY (BusId)
-	REFERENCES Buses (Id)
+	ALTER TABLE Bus.BusWires ADD CONSTRAINT FK1_Bus_BusWires FOREIGN KEY (BusId)
+	REFERENCES Bus.Buses (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 
-	ALTER TABLE BusWires ADD CONSTRAINT FK2_BusWires FOREIGN KEY (WireId)
-	REFERENCES Wires (Id)
+	ALTER TABLE Bus.BusWires ADD CONSTRAINT FK2_Bus_BusWires FOREIGN KEY (WireId)
+	REFERENCES Bus.Wires (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 END
 
-SELECT @test = OBJECT_ID('WiredPins')
+SELECT @test = OBJECT_ID('Bus.WiredPins')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE WiredPins --operates under the hood
+	CREATE TABLE Bus.WiredPins --operates under the hood
 	(
-		WireId			int						NOT NULL,
-		PinId				int						NOT NULL,
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE())
+		WireId		int						NOT NULL,
+		PinId			int						NOT NULL,
+		Ver				rowversion		NOT NULL,
+		Enbld			bit						NOT NULL DEFAULT(1),
+		TMake			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod			datetime2			NOT NULL DEFAULT(GETUTCDATE())
 	)
 
-	ALTER TABLE WiredPins ADD CONSTRAINT PK_WiredPins PRIMARY KEY CLUSTERED(WireId,PinId)
+	ALTER TABLE Bus.WiredPins ADD CONSTRAINT PK_Bus_WiredPins PRIMARY KEY CLUSTERED(WireId,PinId)
 
-	ALTER TABLE WiredPins ADD CONSTRAINT FK1_WiredPins FOREIGN KEY (WireId)
-	REFERENCES Wires (Id)
+	ALTER TABLE Bus.WiredPins ADD CONSTRAINT FK1_Bus_WiredPins FOREIGN KEY (WireId)
+	REFERENCES Bus.Wires (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 
-	ALTER TABLE WiredPins ADD CONSTRAINT FK2_WiredPins FOREIGN KEY (PinId)
-	REFERENCES Pins (Id)
+	ALTER TABLE Bus.WiredPins ADD CONSTRAINT FK2_Bus_WiredPins FOREIGN KEY (PinId)
+	REFERENCES Bus.Pins (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 END
 
-SELECT @test = OBJECT_ID('Watch')
+SELECT @test = OBJECT_ID('Bus.Watch')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE Watch
+	CREATE TABLE Bus.Watch
 	(
-		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
-		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Code				nvarchar(32)	NOT NULL,
-		[Name]			nvarchar(256)	NOT NULL
+		Id			int						NOT NULL PRIMARY KEY IDENTITY(1,1),
+		Ver			rowversion		NOT NULL,
+		Enbld		bit						NOT NULL DEFAULT(1),
+		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		Code		nvarchar(32)	NOT NULL
 	)
 	
-	CREATE UNIQUE NONCLUSTERED INDEX IX1_Watch ON Watch (Code ASC)
-	CREATE UNIQUE NONCLUSTERED INDEX IX2_Watch ON Watch ([Name] ASC)
+	CREATE UNIQUE NONCLUSTERED INDEX IX1_Bus_Watch ON Bus.Watch (Code ASC)
 END
 
-SELECT @test = OBJECT_ID('WatchDescs')
+SELECT @test = OBJECT_ID('Bus.WatchDescs')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE WatchDescs
+	CREATE TABLE Bus.WatchDescs
 	(
-		Id					int						NOT NULL PRIMARY KEY,
-		Ver					rowversion		NOT NULL,
-		[Desc]			nvarchar(max)	NULL
+		Id		int						NOT NULL PRIMARY KEY,
+		Ver		rowversion		NOT NULL,
+		Dsc		nvarchar(max)	NULL
 	)
 
-	ALTER TABLE WatchDescs ADD CONSTRAINT FK1_WatchDescs FOREIGN KEY (Id)
-	REFERENCES Watch (Id)
+	ALTER TABLE Bus.WatchDescs ADD CONSTRAINT FK1_Bus_WatchDescs FOREIGN KEY (Id)
+	REFERENCES Bus.Watch (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 END
 
-SELECT @test = OBJECT_ID('WatchItems')
+SELECT @test = OBJECT_ID('Bus.WatchItems')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE WatchItems
+	CREATE TABLE Bus.WatchItems
 	(
 		WatchId			int						NOT NULL,
 		DeviceId		int						NOT NULL, -- must be circuit, etc.
 		Ver					rowversion		NOT NULL,
-		[Enabled]		bit						NOT NULL DEFAULT(1),
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Modified		datetime2			NOT NULL DEFAULT(GETUTCDATE())
+		Enbld				bit						NOT NULL DEFAULT(1),
+		TMake				datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod				datetime2			NOT NULL DEFAULT(GETUTCDATE())
 	)
 
-	ALTER TABLE WatchItems ADD CONSTRAINT PK_WatchItems PRIMARY KEY CLUSTERED(WatchId,DeviceId)
+	ALTER TABLE Bus.WatchItems ADD CONSTRAINT PK_Bus_WatchItems PRIMARY KEY CLUSTERED(WatchId,DeviceId)
 
-	ALTER TABLE WatchItems ADD CONSTRAINT FK1_WatchItems FOREIGN KEY (WatchId)
-	REFERENCES Watch (Id)
+	ALTER TABLE Bus.WatchItems ADD CONSTRAINT FK1_Bus_WatchItems FOREIGN KEY (WatchId)
+	REFERENCES Bus.Watch (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 
@@ -304,67 +299,67 @@ BEGIN
 	ON UPDATE CASCADE*/
 END
 
-SELECT @test = OBJECT_ID('Faults')
+SELECT @test = OBJECT_ID('Bus.Faults')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE Faults
+	CREATE TABLE Bus.Faults
 	(
 		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
 		Ver					rowversion		NOT NULL,
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Logged			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMake				datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TLog				datetime2			NOT NULL DEFAULT(GETUTCDATE()),
 		Severity		int						NOT NULL DEFAULT(-1),	--N/A for Exception class
 		Code				int						NOT NULL DEFAULT(-1),	--N/A for Exception class
-		[Name]			nvarchar(32)	NULL,
-		[Message]		nvarchar(256)	NULL
+		Title				nvarchar(32)	NULL,
+		Dsc					nvarchar(256)	NULL
 	)
 END
 
-SELECT @test = OBJECT_ID('FaultData')
+SELECT @test = OBJECT_ID('Bus.FaultData')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE FaultData
+	CREATE TABLE Bus.FaultData
 	(
 		Id		int					NOT NULL PRIMARY KEY,
 		Ver		rowversion	NOT NULL,
 		Blob	image				NULL
 	)
 
-	ALTER TABLE FaultData ADD CONSTRAINT FK1_FaultData FOREIGN KEY (Id)
-	REFERENCES Faults (Id)
+	ALTER TABLE Bus.FaultData ADD CONSTRAINT FK1_Bus_FaultData FOREIGN KEY (Id)
+	REFERENCES Bus.Faults (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 END
 
-SELECT @test = OBJECT_ID('Events')
+SELECT @test = OBJECT_ID('Bus.Evnts')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE [Events]
+	CREATE TABLE Bus.Evnts
 	(
 		Id					int						NOT NULL PRIMARY KEY IDENTITY(1,1),
 		Ver					rowversion		NOT NULL,
-		[Level]			int						NOT NULL,
-		Created			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Logged			datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		Lvl					int						NOT NULL,
+		TMake				datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TLog				datetime2			NOT NULL DEFAULT(GETUTCDATE()),
 		EventId			int						NOT NULL DEFAULT(0),
 		Category		int						NOT NULL DEFAULT(0),
-		[Source]		nvarchar(32)	NULL,
-		[Message]		nvarchar(256)	NULL
+		Src					nvarchar(32)	NULL,
+		Dsc					nvarchar(256)	NULL
 	)
 END
 
-SELECT @test = OBJECT_ID('EventData')
+SELECT @test = OBJECT_ID('Bus.EvntData')
 IF @test IS NULL
 BEGIN
-	CREATE TABLE [EventData]
+	CREATE TABLE Bus.EvntData
 	(
 		Id		int					NOT NULL PRIMARY KEY,
 		Ver		rowversion	NOT NULL,
 		Blob	image				NULL
 	)
 
-	ALTER TABLE [EventData] ADD CONSTRAINT FK1_EventData FOREIGN KEY (Id)
-	REFERENCES [Events] (Id)
+	ALTER TABLE Bus.EvntData ADD CONSTRAINT FK1_Bus_EvntData FOREIGN KEY (Id)
+	REFERENCES Bus.Evnts (Id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
 END
