@@ -1,14 +1,42 @@
 ﻿using StreamLabs.MultiProbe.Watchdog.Core;
 
 namespace StreamLabs.MultiProbe.Watchdog.Engine;
-public static class Watch
+public class Watch
 {
+private const string DefaultHost = "locahost";
+
 private const int PeriodStandBySec = 60; //period to stand by in sec
 private const int PeriodStandByMsec = Watch.PeriodStandBySec * 1000; //period to stand by in msec
 
-	public static async Task RunAsync (CancellationToken ct)
+private string m_sHost = Watch.DefaultHost;
+
+	public Watch ()
 	{
-	CmsEventLog log = new CmsEventLog();
+	}
+
+	public Watch (string sHost)
+	{
+		this.host = sHost;
+	}
+
+	public string host
+	{
+		get => m_sHost;
+		private set
+		{
+		string s = (value ?? "").Trim();
+			m_sHost = (s.Length > 0)?s:Watch.DefaultHost;
+		}
+	}
+
+	/// <summary>
+	/// Root entry for the watchdog service.
+	/// </summary>
+	/// <param name="ct"></param>
+	/// <returns></returns>
+	public async Task runAsync (CancellationToken ct)
+	{
+	CmsEventLog log = new CmsEventLog(this.host);
 	int iFuseCounter = 0;
 
 		while (true)

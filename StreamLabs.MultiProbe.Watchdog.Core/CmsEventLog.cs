@@ -2,14 +2,32 @@
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Net;
-using System.Net.Sockets;
 
 namespace StreamLabs.MultiProbe.Watchdog.Core;
 
 public class CmsEventLog
 {
+private const string DefaultHost = "locahost";
+
+private string m_sHost = CmsEventLog.DefaultHost;
+
 	public CmsEventLog ()
 	{
+	}
+
+	public CmsEventLog (string sHost)
+	{
+		this.host = sHost;
+	}
+
+	public string host
+	{
+		get => m_sHost;
+		private set
+		{
+		string s = (value ?? "").Trim();
+			m_sHost = (s.Length > 0)?s:CmsEventLog.DefaultHost;
+		}
 	}
 
 	public async Task reportAsync (CancellationToken ct)
@@ -20,9 +38,14 @@ public class CmsEventLog
 		{
 			//this.testConnectivity();
 
+			//using special name mapped to docker's localhost
 			//cnn = new SqlConnection("Data Source = host.docker.internal,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = 18BB1E14-8837-4FD6-AB9B-72240DC3C9F4");
+			
+			//using known fixed IPv4 addr
 			//cnn = new SqlConnection("Data Source = 192.168.65.2,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = 18BB1E14-8837-4FD6-AB9B-72240DC3C9F4");
-			cnn = new SqlConnection("Data Source = alphablack,1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = 18BB1E14-8837-4FD6-AB9B-72240DC3C9F4");
+
+		string sCnn = $"Data Source = tcp:{this.host},1433; Initial Catalog = CircuitWatchdog; User ID = watchdog; Password = 18BB1E14-8837-4FD6-AB9B-72240DC3C9F4";
+			cnn = new SqlConnection(sCnn);
 			await cnn.OpenAsync(ct);
 
 			using (DbTransaction tran = await cnn.BeginTransactionAsync(IsolationLevel.Serializable,ct).ConfigureAwait(false))
@@ -55,29 +78,29 @@ VALUES(@Lvl,@Src,@Dsc)",cnn,tran as SqlTransaction))
 		}
 	}
 
-	private bool testConnectivity ()
+	private string getHostName ()
 	{
+	string ret = "";
+		
 		try
 		{
-			using (TcpClient tcp = new TcpClient())
-			{
-			IPHostEntry hEntry = Dns.GetHostEntry("alphablack");
-			IPAddress? addr = (hEntry.AddressList.Length > 0)?hEntry.AddressList[0]:null;
-			//IPAddress addr = IPAddress.Parse("192.168.65.2");
-				if (addr != null)
-				{
-				IPEndPoint ep = new IPEndPoint(addr,1433);
-					tcp.Connect(ep);
-				}
-			}
-
-			return true;
+			ret = Dns.GetHostName().Trim();
 		}
-		catch (Exception x)
+		catch
 		{
-		string sErr = x.Message;
-			return false;
 		}
+
+		if (ret.Length > 0) return ret;
+
+		try
+		{
+			ret = Environment.MachineName.Trim();
+		}
+		catch
+		{
+		}
+
+		return ret;
 	}
 
 	private static void Destroy (ref SqlDataReader? rec)

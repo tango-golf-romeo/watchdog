@@ -9,7 +9,8 @@
     },
     "Docker": {
       "commandName": "Docker",
-      "DockerfileRunArguments": "--network host --add-host alphablack:192.168.65.2"
+      "commandLineArgs": "/sql:\"alphablack DESKTOP-DO2N378\"",
+      "DockerfileRunArguments": "--network host --add-host alphablack:192.168.65.2 --add-host DESKTOP-DO2N378:192.168.65.2"
     }
   }
 }

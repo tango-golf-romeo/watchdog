@@ -5,10 +5,12 @@ namespace StreamLabs.MultiProbe.Watchdog.Daemon;
 public class DaemonWorker: BackgroundService
 {
 private readonly ILogger<DaemonWorker> _logger;
+private readonly WatchSpec mWorkSpec;
 
-	public DaemonWorker (ILogger<DaemonWorker> logger)
+	public DaemonWorker (ILogger<DaemonWorker> logger, WatchSpec spec)
 	{
 		_logger = logger;
+		mWorkSpec = spec ?? new WatchSpec();
 	}
 
 	public override Task StartAsync (CancellationToken ct)
@@ -23,8 +25,11 @@ private readonly ILogger<DaemonWorker> _logger;
 		try
 		{
 			_logger?.LogInformation("Ingressing background task.");
+			
+		string sHost = await HostProbe.FindAliveAsync(mWorkSpec.hosts,ct);
 
-			await Watch.RunAsync(ct);
+		Watch wd = new Watch(sHost);
+			await wd.runAsync(ct);
 
 			_logger?.LogInformation("Egressing background task.");
 		}

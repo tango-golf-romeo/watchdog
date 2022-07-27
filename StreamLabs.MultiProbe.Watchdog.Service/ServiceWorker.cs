@@ -27,7 +27,8 @@ private readonly ILogger<ServiceWorker> _logger;
 		{
 			this.log("Ingressing background task.");
 
-			await Watch.RunAsync(ct);
+		Watch wd = new Watch();
+			await wd.runAsync(ct);
 
 			this.log("Egressing background task.");
 		}

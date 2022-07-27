@@ -128,6 +128,22 @@ BEGIN
 	ALTER TABLE Bus.CircuitPins ADD CONSTRAINT PK_Bus_CircuitPins PRIMARY KEY CLUSTERED(CircuitId,PinId)
 END
 
+SELECT @test = OBJECT_ID('Bus.PinMeasures')
+IF @test IS NULL
+BEGIN
+	CREATE TABLE Bus.PinMeasures
+	(
+		PinId				int						NOT NULL,
+		MeasureId		int						NOT NULL,
+		Ver					rowversion		NOT NULL,
+		Enbld				bit						NOT NULL DEFAULT(1),
+		TMake				datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod				datetime2			NOT NULL DEFAULT(GETUTCDATE())
+	)
+
+	ALTER TABLE Bus.PinMeasures ADD CONSTRAINT PK_Bus_PinMeasures PRIMARY KEY CLUSTERED(PinId,MeasureId)
+END
+
 SELECT @test = OBJECT_ID('Bus.Switches')
 IF @test IS NULL
 BEGIN
