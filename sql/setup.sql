@@ -153,7 +153,7 @@ BEGIN
 		Ver			rowversion		NOT NULL,
 		Enbld		bit						NOT NULL DEFAULT(1),
 		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		Tmod		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
 		Code		nvarchar(32)	NOT NULL
 	)
 	
@@ -169,7 +169,7 @@ BEGIN
 		Ver			rowversion		NOT NULL,
 		Enbld		bit						NOT NULL DEFAULT(1),
 		TMake		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
-		TMode		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
+		TMod		datetime2			NOT NULL DEFAULT(GETUTCDATE()),
 		Code		nvarchar(32)	NOT NULL -- may not be required
 	)
 	
